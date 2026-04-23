@@ -1,0 +1,1 @@
+- Converted sequential agent execution into parallel processing to reduce latency.
