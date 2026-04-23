@@ -170,4 +170,3 @@ MIT License
 
 <div align="center">
 ⭐ Star This Repository If You Like The Project
-<img src="https://readme-typing-svg.herokuapp.com?font=Inter&size=18&duration=2500&pause=1000&color=FFD700&center=true&vCenter=true&width=500&lines=Thanks+for+visiting+StockFlow!;Built+with+AI+%2B+Finance+%2B+Code" /> </div> ```
