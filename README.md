@@ -1,172 +1,170 @@
-<div align="center">
+# StockFlow — AI-Powered Investment Research Platform
 
-# ⚡ StockFlow
-
-### Multi-Agent AI Platform for Smart Stock Research & Professional Investment Summaries
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.x-blue?style=for-the-badge&logo=python" />
-  <img src="https://img.shields.io/badge/FastAPI-Backend-green?style=for-the-badge&logo=fastapi" />
-  <img src="https://img.shields.io/badge/AI-Multi--Agent-black?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Open%20Source-Yes-orange?style=for-the-badge" />
-</p>
-
-<img src="https://readme-typing-svg.herokuapp.com?font=Inter&weight=700&size=22&duration=2500&pause=900&color=00C896&center=true&vCenter=true&width=750&lines=Analyze+stocks+in+seconds;Multi-agent+AI+architecture;Professional+investment+summaries;Real-time+streaming+responses;Built+for+modern+finance+research" />
-
-</div>
+> Generate professional investment memos for any listed stock in seconds using a multi-agent AI pipeline.
 
 ---
 
-## ✨ Overview
+## What it does
 
-**StockFlow** is a modern multi-agent AI platform that simplifies stock research by combining intelligent agents into one seamless workflow.
-
-It automatically gathers market data, analyzes sentiment, detects unusual patterns, and generates professional investment summaries in seconds through a clean real-time interface.
-
-Designed for speed, clarity, and scalable financial intelligence.
+StockFlow takes a stock name or ticker as input and runs it through a coordinated pipeline of specialized AI agents — each responsible for a distinct analytical task. The result is a structured investment memo with a BUY / HOLD / SELL verdict, market sentiment analysis, risk flags, valuation assessment, and a 6-month price chart.
 
 ---
 
-## 🚀 Key Features
+## Architecture
 
-### 🤖 Multi-Agent Architecture
+```
+User Input (natural language or ticker)
+        │
+        ▼
+  Orchestrator
+        │
+        ├─── LLM Agent (Groq/Llama 3.3) ──► Ticker Resolution
+        │
+        ├─── data_fetcher ──────────────────► Financial Metrics (yfinance)
+        │           │
+        │           ├──► sentiment_agent ──► News Sentiment (VADER + RSS)
+        │           ├──► anomaly_detector ─► Statistical Risk Flags (scipy)
+        │           └──► ml_predictor ─────► 14-day Price Direction (XGBoost)
+        │
+        └─── memo_writer (Groq/Llama 3.3) ─► Investment Memo
+```
 
-Multiple specialized agents run in parallel for efficient analysis:
-
-- 📈 **Data Agent** → Fetches stock prices, metrics, and market data  
-- 📰 **Sentiment Agent** → Analyzes financial news and sentiment  
-- 🚨 **Anomaly Agent** → Detects unusual trends, volatility, or risk signals  
-- 📝 **Memo Agent** → Generates professional stock research summaries  
-- 🎯 **Central Orchestrator** → Coordinates all agents intelligently  
-
----
-
-### ⚡ Real-Time Experience
-
-- Live streaming responses  
-- Chat-style modern UI  
-- Fast analysis workflow  
-- Smooth user experience  
-
----
-
-### 📊 Professional Insights
-
-Generate summaries containing:
-
-- Company overview  
-- Price snapshot  
-- Market sentiment  
-- Risk observations  
-- Important signals  
-- Final research memo  
+All four specialist agents run in parallel after the data fetch, cutting latency roughly in half.
 
 ---
 
-## 🛠 Tech Stack
+## Agents
 
-| Layer | Technology |
-|------|------------|
-| Backend | FastAPI |
-| Frontend | HTML, CSS, JavaScript |
-| AI System | Multi-Agent Workflow |
-| APIs | Financial Data Providers |
-| Streaming | Real-Time Responses |
-| Deployment | Cloud Ready |
+| Agent | Type | Responsibility |
+|---|---|---|
+| `data_fetcher` | Non-LLM | Fetches 6-month OHLCV + fundamentals from Yahoo Finance |
+| `sentiment_agent` | Non-LLM | Scrapes RSS feeds, scores headlines with VADER sentiment |
+| `anomaly_detector` | Non-LLM | Z-score analysis, volatility, volume spikes, valuation flags |
+| `ml_predictor` | ML Model | XGBoost classifier — predicts 14-day price direction with confidence % |
+| `memo_writer` | LLM | Synthesizes all agent outputs into a structured investment memo |
 
 ---
 
-## 🧠 How It Works
+## Tech Stack
 
-```text
-User enters stock ticker
-        ↓
-Central orchestrator receives request
-        ↓
-All AI agents run in parallel
-        ↓
-Each returns specialized insights
-        ↓
-Results merged into one summary
-        ↓
-Response streams live to frontend
-📂 Project Structure
+**Backend**
+- FastAPI — API server with SSE streaming
+- Groq / Llama 3.3 70B — LLM for ticker resolution and memo generation
+- yfinance — financial data
+- NLTK VADER — sentiment analysis
+- scipy / numpy — statistical anomaly detection
+- XGBoost + pandas-ta — ML price direction model
+- RapidFuzz — fuzzy stock search
+
+**Frontend**
+- Vanilla HTML / CSS / JavaScript — no framework
+- Lightweight Charts (TradingView) — 6-month price chart
+- marked.js — markdown rendering
+
+---
+
+## Features
+
+- **Natural language search** — type "Apple" or "Reliance" and the LLM resolves the correct ticker
+- **Autocomplete dropdown** — hybrid search across 8,011 US + NSE stocks with fuzzy matching
+- **Investment memo** — structured report with Snapshot table, sentiment, risk flags, valuation, and recommendation
+- **Verdict card** — prominent BUY / HOLD / SELL card as the hero of the report
+- **6-month price chart** — interactive Lightweight Charts area chart with 6M % change
+- **ML prediction** — XGBoost model trained on 500+ stocks predicts 14-day direction
+- **Dark mode** — system-aware with manual toggle
+- **Recent searches** — localStorage-based search history
+
+---
+
+## Project Structure
+
+```
 stockflow/
-│── main.py
-│── agents/
-│   ├── data_agent.py
-│   ├── sentiment_agent.py
-│   ├── anomaly_agent.py
-│   ├── memo_agent.py
-│   └── orchestrator.py
-│── templates/
-│── static/
-│── requirements.txt
-│── README.md
-⚙️ Installation
-1️⃣ Clone Repository
+├── agents/
+│   ├── data_fetcher.py       # yfinance data agent
+│   ├── sentiment_agent.py    # VADER sentiment agent
+│   ├── anomaly_detector.py   # Statistical anomaly agent
+│   ├── ml_predictor.py       # XGBoost ML agent
+│   └── memo_writer.py        # LLM memo writer agent
+├── core/
+│   └── orchestrator.py       # Async pipeline coordinator
+├── datasets/
+│   └── all_stocks.csv        # 8,011 US + NSE stocks for search
+├── models/
+│   └── feature_columns.json  # ML feature schema
+├── frontend/
+│   └── index.html            # Single-page UI
+├── collect_data.py           # ML training data collection script
+├── engineer_features.py      # Feature engineering script
+├── train_model.py            # XGBoost training script
+└── main.py                   # FastAPI entry point
+```
+
+---
+
+## Setup
+
+**1. Clone the repo**
+```bash
 git clone https://github.com/Ankith34/stockflow.git
 cd stockflow
-2️⃣ Install Dependencies
+```
+
+**2. Create virtual environment**
+```bash
+python -m venv .venv
+.venv\Scripts\activate      # Windows
+source .venv/bin/activate   # Mac/Linux
+```
+
+**3. Install dependencies**
+```bash
 pip install -r requirements.txt
-3️⃣ Run Server
-uvicorn main:app --reload
-4️⃣ Open Browser
-http://127.0.0.1:8000
-📌 Example Workflow
-Input
-AAPL
-Output
-Apple shows stable momentum with positive sentiment.
-Moderate volatility detected.
-Strong fundamentals.
-Overall outlook: Positive Watchlist Candidate.
-🌟 Why StockFlow?
+```
 
-Most platforms only show numbers.
+**4. Set up environment variables**
+```bash
+cp .env.example .env
+# Add your GROQ_API_KEY to .env
+```
 
-StockFlow turns numbers into understanding.
+**5. Run the server**
+```bash
+python main.py
+```
 
-It helps users quickly evaluate stocks without reading multiple websites, reports, or news sources manually.
+Open `http://127.0.0.1:8000`
 
-🎯 Use Cases
-Retail investors
-Finance students
-Stock researchers
-Quick company analysis
-Market sentiment checks
-Smart memo generation
-📈 Future Roadmap
-📁 Portfolio Analyzer
-🔔 Watchlist Alerts
-📉 Buy / Sell Scoring
-📄 PDF Report Export
-📊 Technical Indicator Dashboard
-🌍 Global Markets Support
-📅 Earnings Calendar
-🧠 Personalized AI Recommendations
-📸 Screenshots
+---
 
-Add screenshots of UI here
+## ML Model (Optional)
 
-🤝 Contributing
+To train the price direction model from scratch:
 
-Contributions are welcome.
+```bash
+python collect_data.py       # ~30 min — fetches S&P 500 historical data
+python engineer_features.py  # ~5 min  — computes technical indicators
+python train_model.py        # ~10 min — trains XGBoost, saves to models/
+```
 
-fork repo
-create feature branch
-commit changes
-open pull request
-👨‍💻 Author
+The trained model artifacts (`models/*.pkl`) are not included in the repo due to file size. The app runs without them — `ml_predictor` returns `UNKNOWN` gracefully if models are missing.
 
-Ankith Kumar
+---
 
-🔗 GitHub: https://github.com/Ankith34
+## Data Sources
 
-📜 License
+- **Yahoo Finance** (via yfinance) — price data, fundamentals, analyst targets
+- **Google News RSS + Yahoo Finance RSS** — news headlines for sentiment
+- **NSE India + NASDAQ** — stock universe for autocomplete search
 
-MIT License
+---
 
-<div align="center">
-⭐ Star This Repository If You Like The Project
+## Limitations
+
+- Yahoo Finance data can be delayed 15 minutes and occasionally returns stale values for large-cap stocks
+- NSE stocks with low global coverage may return incomplete data from yfinance
+- ML model accuracy is ~55–60% AUC — used as a probabilistic signal, not a definitive prediction
+
+---
+
+*Not financial advice. For educational and demonstration purposes only.*
