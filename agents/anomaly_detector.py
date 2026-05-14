@@ -44,8 +44,8 @@ def detect_anomalies(metrics: dict) -> dict:
         flags.append("Negative P/E ratio (company currently unprofitable)")
     
     debt_eq = metrics.get("debt_to_equity")
-    if debt_eq and debt_eq > 200:
-        flags.append(f"Very high debt-to-equity: {debt_eq:.0f}%")
+    if debt_eq and debt_eq > 2:
+        flags.append(f"Very high debt-to-equity: {debt_eq:.2f}x")
     
     # Distance from 52-week high/low
     price = metrics.get("current_price", 0)

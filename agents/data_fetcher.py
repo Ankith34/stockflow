@@ -30,7 +30,9 @@ def fetch_stock_data(ticker: str) -> dict:
             "forward_pe": info.get("forwardPE"),
             "revenue_growth": info.get("revenueGrowth"),
             "profit_margins": info.get("profitMargins"),
-            "debt_to_equity": info.get("debtToEquity"),
+            # Yahoo Finance returns debtToEquity as a percentage (e.g. 150.0 means 1.5x)
+            # Divide by 100 to get the actual ratio
+            "debt_to_equity": round(info.get("debtToEquity") / 100, 2) if info.get("debtToEquity") is not None else None,
             "free_cash_flow": fcf,
             "52w_high": info.get("fiftyTwoWeekHigh", 0),
             "52w_low": info.get("fiftyTwoWeekLow", 0),

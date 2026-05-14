@@ -58,14 +58,17 @@ def write_memo(
     metrics: dict,
     sentiment: dict,
     anomalies: dict,
+    prediction: dict = None,
     is_indian: bool = False,
     currency: str = "$",
 ) -> str:
     """
     Memo-writer agent.
-    Receives structured outputs from the three data agents and produces
+    Receives structured outputs from all data agents and produces
     a professional investment memo via Groq/Llama.
     """
+    if prediction is None:
+        prediction = {"direction": "UNKNOWN", "confidence": 0.0, "horizon": "14d"}
     bm     = _get_benchmark(metrics)
     sector = metrics.get("sector", "Unknown")
 
@@ -90,6 +93,16 @@ def write_memo(
     margin_signal = ("Healthy"  if margin and margin >= bm["margin_healthy"] else
                      "Thin"     if margin and margin >= 0                    else
                      "Negative" if margin else "N/A")
+
+    # ── Format ML prediction signal ──
+    ml_dir  = prediction.get("direction", "UNKNOWN")
+    ml_conf = prediction.get("confidence", 0.0)
+    ml_hor  = prediction.get("horizon", "14d")
+    ml_signal = (
+        f"{ml_dir} ({ml_conf*100:.0f}% confidence, {ml_hor})"
+        if ml_dir != "UNKNOWN"
+        else "Insufficient data"
+    )
 
     flags     = "\n".join([f"  - {f}" for f in anomalies.get("flags", [])]) or "  - None"
     headlines = "\n".join(
@@ -129,6 +142,7 @@ Articles: {sentiment.get('positive_count')} positive / {sentiment.get('neutral_c
 Headlines:
 {headlines}
 Risk: {anomalies.get('risk_level')} | Volatility: {_fmt(anomalies.get('annualized_volatility'))}% | Volume: {_fmt(anomalies.get('volume_ratio'))}x avg
+ML Prediction: {ml_signal}
 Flags:
 {flags}
 Business: {metrics.get('description','')}
@@ -143,7 +157,7 @@ Output EXACTLY this format:
 
 ---
 
-## 📌 Snapshot
+## Snapshot
 | Metric | Value | Signal |
 |--------|-------|--------|
 | Price | {_fmt(price, currency, is_indian=is_indian)} | Target {_fmt(target, currency, is_indian=is_indian)} ({_fmt(upside)}% upside) |
@@ -151,43 +165,46 @@ Output EXACTLY this format:
 | P/E Ratio | {_fmt(pe)} | {pe_signal} vs {bm['label']} fair {bm['pe_fair']}x |
 | Revenue Growth | {_fmt(growth)} | {growth_signal} for {bm['label']} |
 | Profit Margin | {_fmt(margin)} | {margin_signal} for {bm['label']} |
-| Debt / Equity | {_fmt(metrics.get('debt_to_equity'))} | [Low <50 / Moderate 50–150 / High >150] |
+| Debt / Equity | {_fmt(metrics.get('debt_to_equity'))} | [Low <0.5 / Moderate 0.5–1.5 / High >1.5] |
 | Free Cash Flow | {_fmt(fcf, currency, is_indian=is_indian)} | {fcf_signal} |
+| ML Prediction | {ml_dir} | {ml_signal} |
 
 ---
 
-## 🗞️ Market Sentiment  —  [BULLISH / NEUTRAL / BEARISH]
+## Market Sentiment  —  [BULLISH / NEUTRAL / BEARISH]
 > [1 sentence OR "Insufficient news data."]
 
-- 🟢 Positive: {sentiment.get('positive_count')} articles
-- ⚪ Neutral:  {sentiment.get('neutral_count')} articles
-- 🔴 Negative: {sentiment.get('negative_count')} articles
+- Positive: {sentiment.get('positive_count')} articles
+- Neutral:  {sentiment.get('neutral_count')} articles
+- Negative: {sentiment.get('negative_count')} articles
 
 **Top headlines:**
 [Top 3 verbatim OR "No recent headlines found."]
 
 ---
 
-## ⚠️ Risk Flags  —  [{anomalies.get('risk_level')} RISK]
-[Each flag as "⚠ <flag>" OR "✅ No anomalies detected."]
+## Risk Flags  —  [{anomalies.get('risk_level')} RISK]
+[Each flag as "- <flag>" OR "No anomalies detected."]
 
 Volatility: {_fmt(anomalies.get('annualized_volatility'))}% annualized  ·  Volume: {_fmt(anomalies.get('volume_ratio'))}x avg
 
 ---
 
-## 💰 Valuation
+## Valuation
 [2 sentences using signals + upside numbers.]
 
 ---
 
-## ✅ Recommendation
+## Recommendation
 > **[STRONG BUY / BUY / HOLD / SELL / STRONG SELL]**
 
 [3 sentences: why this rating, what upgrades it, what to watch.]
 
+VERDICT: [STRONG BUY / BUY / HOLD / SELL / STRONG SELL]
+
 ---
 
-*⚠ Informational only — not financial advice. Data from Yahoo Finance, may be delayed 15 minutes.*
+*Informational only — not financial advice. Data from Yahoo Finance, may be delayed 15 minutes.*
 """
 
     response = client.chat.completions.create(

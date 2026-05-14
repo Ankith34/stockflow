@@ -39,3 +39,9 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Large ML/dataset files — do not commit
+datasets/training_raw.csv
+datasets/training_features.csv
+models/*.pkl
+models/*.joblib
